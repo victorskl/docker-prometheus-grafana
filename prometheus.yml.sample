@@ -11,3 +11,30 @@ scrape_configs:
     static_configs:
       - targets: ['grafana:3000']
 
+  - job_name: 'cadvisor'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+     - targets: ['cadvisor:8080']
+
+
+# Example Machine/Node metrics scraping using node_exporter
+#
+#  - job_name: 'node_exporter'
+#    scrape_interval: 10s
+#    metrics_path: '/metrics'
+#    static_configs:
+#     - targets: ['host.docker.internal:9100']
+
+
+# Example Spring Boot app metrics scraping using Micrometer Prometheus
+#
+#  - job_name: 'spring-boot-restful'
+#    scrape_interval: 5s
+#    metrics_path: '/prometheus'
+#    static_configs:
+#     - targets: ['host.docker.internal:8080']
+#    basic_auth:
+#      username: admin
+#      password: tommy
+

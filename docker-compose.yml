@@ -3,17 +3,17 @@ version: "3"
 services:
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:latest
     ports:
     - 9090:9090
     volumes:
     - ./prometheus.yml:/etc/prometheus/prometheus.yml
     - ./data/prometheus:/prometheus
-    restart: always
+    restart: unless-stopped
     container_name: prometheus
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:latest
     ports:
     - 3000:3000
     volumes:
@@ -24,6 +24,19 @@ services:
       - .env
     depends_on:
       - prometheus
-    restart: always
+    restart: unless-stopped
     container_name: grafana
+
+  cadvisor:
+    image: google/cadvisor:latest
+    ports:
+      - 4194:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    restart: unless-stopped
+    container_name: cadvisor
 
