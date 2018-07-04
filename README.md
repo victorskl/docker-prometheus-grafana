@@ -109,6 +109,12 @@ To monitor nodes and containers within a cluster, go to each node, run cAdvisor 
   apt install prometheus-node-exporter
   systemctl status prometheus-node-exporter
   ```
+  Or install the latest [node_exporter](node_exporter) using Ansible:
+  ```
+  cd node_exporter
+  cp hosts.ini.sample hosts.ini
+  bash setup.sh ubuntu ~/.ssh/id_rsa node_exporter.yml
+  ```
 
 - At any case, `node_exporter` exports machine metrics at: [http://localhost:9100/metrics](http://localhost:9100/metrics)
 
@@ -116,7 +122,7 @@ To monitor nodes and containers within a cluster, go to each node, run cAdvisor 
 
 - Go to [http://localhost:9090/graph](http://localhost:9090/graph) and at _Expression_ input box, enter `node_cpu_seconds_total` to observe _node_exporter_ metrics.
 
-- A good starting point for [`node_exporter` collector](https://grafana.com/dashboards?collector=nodeExporter) based Grafana dashboards are [__22__](https://grafana.com/dashboards/22), [__405__](https://grafana.com/dashboards/405), [__893__](https://grafana.com/dashboards/893). Note that some of these dashboards are outdated and, may need to tune to fit with latest version of _node_exporter_ metrics, e.g. 
+- A good starting point for [`node_exporter` collector](https://grafana.com/dashboards?collector=nodeExporter) based Grafana dashboards are [__22__](https://grafana.com/dashboards/22), [__405__](https://grafana.com/dashboards/405), [__893__](https://grafana.com/dashboards/893). Note that some of these dashboards are outdated and, may need to tune to fit with [latest version of _node_exporter_ metrics](https://github.com/prometheus/node_exporter/releases/tag/v0.16.0), e.g. 
 
   ```
   node_cpu >> node_cpu_seconds_total

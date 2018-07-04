@@ -1,0 +1,63 @@
+- hosts: all
+  gather_facts: False
+
+  tasks:
+
+    - name: Check if prometheus-node-exporter Service Exists
+      stat: path=/etc/init.d/prometheus-node-exporter
+      register: service_status
+
+    - name: Stop and disable prometheus-node-exporter
+      systemd:
+        name: prometheus-node-exporter
+        enabled: no
+        masked: yes
+        state: stopped
+      when: service_status.stat.exists
+
+    - name: Get node_exporter 0.16.0
+      get_url:
+        url: https://github.com/prometheus/node_exporter/releases/download/v0.16.0/node_exporter-0.16.0.linux-amd64.tar.gz
+        dest: /tmp
+        mode: 755
+
+    - name: Copy node_exporter systemd file
+      copy:
+        src: node_exporter.service
+        dest: /etc/systemd/system
+
+    - name: Copy node_exporter env config file
+      copy:
+        src: node_exporter.conf
+        dest: /etc
+
+    - name: Create textfile_collector directory
+      file:
+        path: /var/lib/node_exporter/textfile_collector
+        state: directory
+
+    - name: Unarchive node_exporter
+      unarchive:
+        src: /tmp/node_exporter-0.16.0.linux-amd64.tar.gz
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install node_exporter
+      copy:
+        src: /tmp/node_exporter-0.16.0.linux-amd64/node_exporter
+        dest: /usr/sbin/node_exporter
+        mode: ugo+x
+        remote_src: yes
+
+    - name: Create node_exporter user
+      user:
+        name: "node_exporter"
+        createhome: no
+        shell: /sbin/nologin
+
+    - name: Enable and Start node_exporter.service
+      systemd:
+        daemon-reload: yes
+        name: node_exporter.service
+        enabled: yes
+        state: restarted

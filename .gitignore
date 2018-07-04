@@ -5,3 +5,5 @@
 .env
 data
 prometheus.yml
+hosts.ini
+*.retry
