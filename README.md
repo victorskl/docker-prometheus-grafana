@@ -44,28 +44,28 @@ docker-compose -p dev down
 - Go to [http://localhost:9090/graph](http://localhost:9090/graph) and add the follow Prom query in __Expression__ input box. Switch to __Graph__ tab to observe the memory usage of containers that fall under __dev__ project namespace (i.e `-p dev` bit).
 
   ```
-  container_memory_usage_bytes{container_label_com_docker_compose_project ="dev"}
+  container_memory_usage_bytes{container_label_com_docker_compose_project = "dev"}
   ```
-
-- Prometheus exporters - [https://prometheus.io/docs/instrumenting/exporters/](https://prometheus.io/docs/instrumenting/exporters/)
-
 
 ### Grafana
 
-- Grafana dashboard at: [http://localhost:3000](http://localhost:3000). Login with `admin:admin` unless you have modified in your `.env` file.
+- Grafana dashboard available at: [http://localhost:3000](http://localhost:3000). Login with `admin:admin` unless you have modified in your `.env` file.
 
 - Then goto [http://localhost:3000/datasources](http://localhost:3000/datasources) > click __Prometheus__ > __Dashboards__ tab > import the built-in dashboards
 
-- If you would like to load any preconfigured datasources, add them in [`grafana/provisioning/datasources`](grafana/provisioning/datasources).
+- _(Optional)_ If you would like to load any preconfigured datasources, add them in [`grafana/provisioning/datasources`](grafana/provisioning/datasources).
 
-- If you would like to load any preconfigured dashboards, add them in [`dashboards`](dashboards) directory.
+- _(Optional)_ If you would like to load any preconfigured dashboards, add them in [`dashboards`](dashboards) directory.
 
-- More Grafana dashboards at: [https://grafana.com/dashboards?dataSource=prometheus](https://grafana.com/dashboards?dataSource=prometheus)
+- Shop more Grafana dashboards at: [https://grafana.com/dashboards?dataSource=prometheus](https://grafana.com/dashboards?dataSource=prometheus)
 
 
-### Exporting Metrics
+## Exporting Metrics
 
-To monitor nodes and containers within a cluster, go to each node, run cAdvisor to export containers metrics, run node_exporter to export machine metrics, and add each host in `scrape_configs` as a job using hostname e.g.
+To monitor nodes and containers within a cluster
+ 1. go to each node, run cAdvisor to export containers metrics,
+ 2. run node_exporter to export machine metrics and, 
+ 3. add each host in `scrape_configs` as a job using hostname e.g.
   
   ```
   - job_name: 'cadvisor'
@@ -81,30 +81,30 @@ To monitor nodes and containers within a cluster, go to each node, run cAdvisor 
      - targets: ['PUBLIC_IP:9100','DOMAIN_NAME:9100','HOST:9100','node1:9100','node2:9100']
   ```
 
-
-
-#### cAdvisor
+### cAdvisor
 
 - cAdvisor is used for containers monitoring.
 
 - cAdvisor default dashboard available at: [http://localhost:4194](http://localhost:4194) which show the root container.
 
-- For sub-containers (i.e those that deployed) are available at: [http://localhost:4194/docker](http://localhost:4194/docker)
+- For sub-containers (i.e those that you deployed) are available at: [http://localhost:4194/docker](http://localhost:4194/docker)
 
 - cAdvisor export these containers metrics at: [http://localhost:4194/metrics](http://localhost:4194/metrics) in Prometheus format.
 
 - To add Grafana dashboard for monitoring containers, go to [http://localhost:3000/dashboard/import](http://localhost:3000/dashboard/import) and add __193__ in dashboard ID input box and press __Load__ button. This will install dashboard ID [__193__ - Docker monitoring](https://grafana.com/dashboards/193) which visualize cAdvisor exported container metrics. Another good candidate is dashboard ID [__179__](https://grafana.com/dashboards/179).
 
-- To export containers metrics on each node within a cluster, run cAdvisor on each node:
+- To export containers metrics on each node within a cluster, run cAdvisor on each node using `-p dev` as project namespace:
   ```
+  wget https://raw.githubusercontent.com/victorskl/docker-prometheus-grafana/master/cadvisor.yml
   docker-compose -f cadvisor.yml -p dev up -d
   ```
+  _Note: adjust the `-p dev` namespace to fit your deployment  stack project namespace._
 
-#### node_exporter
+### node_exporter
 
 - To monitor the host node, use [node_exporter](https://github.com/prometheus/node_exporter).
  
-- Running _node_exporter_ as a container [is not recommended](https://github.com/prometheus/node_exporter#using-docker). Therefore, use distribution package or run it someway through [`systemd` service](https://github.com/prometheus/node_exporter/tree/master/examples).
+- Running node_exporter as a container [___is not recommended___](https://github.com/prometheus/node_exporter#using-docker). Therefore, use distribution package or run it someway through [`systemd` service](https://github.com/prometheus/node_exporter/tree/master/examples).
   ```
   apt install prometheus-node-exporter
   systemctl status prometheus-node-exporter
@@ -116,13 +116,13 @@ To monitor nodes and containers within a cluster, go to each node, run cAdvisor 
   bash setup.sh ubuntu ~/.ssh/id_rsa node_exporter.yml
   ```
 
-- At any case, `node_exporter` exports machine metrics at: [http://localhost:9100/metrics](http://localhost:9100/metrics)
+- At any case, node_exporter exports machine metrics at: [http://localhost:9100/metrics](http://localhost:9100/metrics)
 
 - Uncomment `node_exporter` job in [prometheus.yml](prometheus.yml.sample) to start scraping node metrics.
 
-- Go to [http://localhost:9090/graph](http://localhost:9090/graph) and at _Expression_ input box, enter `node_cpu_seconds_total` to observe _node_exporter_ metrics.
+- Go to [http://localhost:9090/graph](http://localhost:9090/graph) and, at _Expression_ input box, enter `node_cpu_seconds_total` to observe node_exporter metrics.
 
-- A good starting point for [`node_exporter` collector](https://grafana.com/dashboards?collector=nodeExporter) based Grafana dashboards are [__22__](https://grafana.com/dashboards/22), [__405__](https://grafana.com/dashboards/405), [__893__](https://grafana.com/dashboards/893). Note that some of these dashboards are outdated and, may need to tune to fit with [latest version of _node_exporter_ metrics](https://github.com/prometheus/node_exporter/releases/tag/v0.16.0), e.g. 
+- A good starting point for [`node_exporter` collector](https://grafana.com/dashboards?collector=nodeExporter) based Grafana dashboards are [__22__](https://grafana.com/dashboards/22), [__405__](https://grafana.com/dashboards/405), [__893__](https://grafana.com/dashboards/893). Note that some of these dashboards are outdated and, may need to tune to fit with [latest version of node_exporter metrics](https://github.com/prometheus/node_exporter/releases/tag/v0.16.0), e.g. 
 
   ```
   node_cpu >> node_cpu_seconds_total
@@ -130,7 +130,7 @@ To monitor nodes and containers within a cluster, go to each node, run cAdvisor 
   label_values(node_boot_time, instance) >> label_values(node_boot_time_seconds, instance)
   ```
 
-#### Micrometer
+### Micrometer
 
 - To export Spring Boot application metrics, use [Micrometer Prometheus](http://micrometer.io/docs/registry/prometheus). It just need to add dependency. _The [micrometer-jvm-extras](https://github.com/mweirauch/micrometer-jvm-extras) is optional_. This expose metrics at [http://localhost:8080/prometheus](http://localhost:8080/prometheus).
 
@@ -152,7 +152,9 @@ To monitor nodes and containers within a cluster, go to each node, run cAdvisor 
 
 - A good starter Grafana dashboard is ID [__4701__](https://grafana.com/dashboards/4701).
 
+### More Metrics Exporters
 
+- Prometheus exporters - [https://prometheus.io/docs/instrumenting/exporters/](https://prometheus.io/docs/instrumenting/exporters/)
 
 
 ---
