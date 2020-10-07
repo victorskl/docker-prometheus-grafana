@@ -2,7 +2,7 @@ version: "3"
 
 services:
   cadvisor:
-    image: google/cadvisor:latest
+    image: gcr.io/google-containers/cadvisor:latest
     ports:
       - 4194:8080
     volumes:
@@ -11,6 +11,7 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     container_name: cadvisor
 

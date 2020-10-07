@@ -1,5 +1,7 @@
 # docker-prometheus-grafana
 
+## TL;DR
+
 Docker compose stack for Prometheus + Grafana monitoring.
 
 ```
@@ -16,8 +18,13 @@ docker-compose -p dev up -d
 docker-compose -p dev down
 ```
 
+Visit:
+- http://localhost:4194
+- http://localhost:9090
+- http://localhost:3000
 
-## Quick Walk-through
+
+## Walk-through
 
 - Both Prometheus and Grafana data are persisted into `./data`.
 
@@ -41,11 +48,24 @@ docker-compose -p dev down
 
 - Go to [http://localhost:9090/targets](http://localhost:9090/targets) and make sure [all targets are __UP__](assets/prometheus_targets.png). These targets are jobs from [prometheus.yml](prometheus.yml.sample) configuration.
 
-- Go to [http://localhost:9090/graph](http://localhost:9090/graph) and add the follow Prom query in __Expression__ input box. Switch to __Graph__ tab to observe the memory usage of containers that fall under __dev__ project namespace (i.e `-p dev` bit).
+- Go to [http://localhost:9090/graph](http://localhost:9090/graph) and add the following Prom query `up` in __Expression__ input box and click "Execute".
+  ```
+  up
+  ```
 
+- Output sections has two views/tabs -- **Console/Table** or **Graph**. Do switch and observe that.
+
+- Next, try enter `container_memory_usage_bytes` metric (i.e. container metrics exported from cAdvisor container) in __Expression__ input box and click "Execute".
+  ```
+  container_memory_usage_bytes
+  ```
+
+- Next, let's filter to observe the memory usage of containers that fall under __dev__ project namespace (i.e `-p dev` bit).
   ```
   container_memory_usage_bytes{container_label_com_docker_compose_project = "dev"}
   ```
+
+- Next, you probably should start tinkering [Prometheus Query](https://prometheus.io/docs/prometheus/latest/querying/basics/) to get yourself familiar with query syntax.
 
 ### Grafana
 
@@ -61,6 +81,8 @@ docker-compose -p dev down
 
 
 ## Exporting Metrics
+
+### TL;DR
 
 To monitor nodes and containers within a cluster
  1. go to each node, run cAdvisor to export containers metrics,
@@ -82,6 +104,7 @@ To monitor nodes and containers within a cluster
   ```
 
 ### cAdvisor
+_aka How to export and scrape container metrics_
 
 - cAdvisor is used for containers monitoring.
 
@@ -101,6 +124,7 @@ To monitor nodes and containers within a cluster
   _Note: adjust the `-p dev` namespace to fit your deployment  stack project namespace._
 
 ### node_exporter
+_aka How to export and scrape host node metrics_
 
 - To monitor the host node, use [node_exporter](https://github.com/prometheus/node_exporter).
  
@@ -131,6 +155,7 @@ To monitor nodes and containers within a cluster
   ```
 
 ### Micrometer
+_aka How to export and scrape Spring Boot Application metrics_
 
 - To export Spring Boot application metrics, use [Micrometer Prometheus](http://micrometer.io/docs/registry/prometheus). It just need to add dependency. _The [micrometer-jvm-extras](https://github.com/mweirauch/micrometer-jvm-extras) is optional_. This expose metrics at [http://localhost:8080/prometheus](http://localhost:8080/prometheus).
 
